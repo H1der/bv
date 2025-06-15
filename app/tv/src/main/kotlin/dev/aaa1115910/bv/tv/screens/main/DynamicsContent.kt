@@ -87,9 +87,8 @@ fun DynamicsContent(
         }
     }
 
-    BackHandler(focusOnContent) {
-        logger.fInfo { "onFocusBackToNav" }
-        navFocusRequester.requestFocus(scope)
+    BackHandler(focusOnContent && !currentListOnTop) {
+        logger.fInfo { "onFocusBackToNav - scroll to top" }
         // scroll to top
         scope.launch(Dispatchers.Main) {
             if (Prefs.enableTvAnimations) dynamicState.animateScrollToItem(0) else dynamicState.scrollToItem(0)
