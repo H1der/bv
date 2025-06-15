@@ -110,14 +110,21 @@ interface TopNavItem {
     fun getDisplayName(context: Context = BVApp.context): String
 }
 
-enum class HomeTopNavItem(private val displayName: String) : TopNavItem {
+enum class HomeTopNavItem(private val displayName: String, private val pgcType: PgcType? = null) : TopNavItem {
     Recommend("推荐"),
     Popular("热门"),
-    Dynamics("动态");
+    Anime("动漫", PgcType.Anime),
+    GuoChuang("国创", PgcType.GuoChuang),
+    Movie("电影", PgcType.Movie),
+    Documentary("纪录片", PgcType.Documentary),
+    Tv("电视剧", PgcType.Tv),
+    Variety("综艺", PgcType.Variety);
 
     override fun getDisplayName(context: Context): String {
         return displayName
     }
+
+    fun getPgcType(): PgcType? = pgcType
 }
 
 enum class UgcTopNavItem(private val ugcType: UgcTypeV2) : TopNavItem {

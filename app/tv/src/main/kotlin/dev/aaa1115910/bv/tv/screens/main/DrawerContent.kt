@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.DynamicFeed
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.OndemandVideo
@@ -135,8 +136,8 @@ fun NavigationDrawerScope.DrawerContent(
             listOf(
                 DrawerItem.Search,
                 DrawerItem.Home,
+                DrawerItem.Dynamics,
                 DrawerItem.UGC,
-                DrawerItem.PGC,
             ).forEach { item ->
                 item {
                     NavigationDrawerItem(
@@ -183,8 +184,8 @@ enum class DrawerItem(
     User(displayName = "点击登录", displayIcon = Icons.Default.AccountCircle),
     Search(displayName = "搜索", displayIcon = Icons.Default.Search),
     Home(displayName = "首页", displayIcon = Icons.Default.Home),
+    Dynamics(displayName = "动态", displayIcon = Icons.Default.DynamicFeed),
     UGC(displayName = "UGC", displayIcon = Icons.Default.OndemandVideo),
-    PGC(displayName = "PGC", displayIcon = Icons.Default.Movie),
     Settings(displayName = "设置", displayIcon = Icons.Default.Settings), ;
 }
 

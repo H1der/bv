@@ -294,8 +294,8 @@ private fun CardInfo(
     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.titleMedium,
-            maxLines = 1,
+            style = MaterialTheme.typography.titleSmall,
+            maxLines = 2,
             overflow = TextOverflow.Ellipsis
         )
         Row(

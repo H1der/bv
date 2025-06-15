@@ -42,8 +42,8 @@ import dev.aaa1115910.bv.tv.activities.user.ToViewActivity
 import dev.aaa1115910.bv.tv.activities.user.UserInfoActivity
 import dev.aaa1115910.bv.tv.screens.main.DrawerContent
 import dev.aaa1115910.bv.tv.screens.main.DrawerItem
+import dev.aaa1115910.bv.tv.screens.main.DynamicsContent
 import dev.aaa1115910.bv.tv.screens.main.HomeContent
-import dev.aaa1115910.bv.tv.screens.main.PgcContent
 import dev.aaa1115910.bv.tv.screens.main.UgcContent
 import dev.aaa1115910.bv.tv.screens.search.SearchInputScreen
 import dev.aaa1115910.bv.util.fException
@@ -72,8 +72,8 @@ fun MainScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
     val mainFocusRequester = remember { FocusRequester() }
+    val dynamicsFocusRequester = remember { FocusRequester() }
     val ugcFocusRequester = remember { FocusRequester() }
-    val pgcFocusRequester = remember { FocusRequester() }
     val searchFocusRequester = remember { FocusRequester() }
 
     val handleBack = {
@@ -88,12 +88,16 @@ fun MainScreen(
     }
 
     val onFocusToContent: () -> Unit = {
-        when (selectedDrawerItem) {
-            DrawerItem.Home -> mainFocusRequester.requestFocus()
-            DrawerItem.UGC -> ugcFocusRequester.requestFocus()
-            DrawerItem.PGC -> pgcFocusRequester.requestFocus()
-            DrawerItem.Search -> searchFocusRequester.requestFocus()
-            else -> {}
+        runCatching {
+            when (selectedDrawerItem) {
+                DrawerItem.Home -> mainFocusRequester.requestFocus()
+                DrawerItem.Dynamics -> dynamicsFocusRequester.requestFocus()
+                DrawerItem.UGC -> ugcFocusRequester.requestFocus()
+                DrawerItem.Search -> searchFocusRequester.requestFocus()
+                else -> {}
+            }
+        }.onFailure {
+            logger.fException(it) { "Failed to request focus for ${selectedDrawerItem.displayName}" }
         }
     }
 
@@ -152,8 +156,8 @@ fun MainScreen(
             ) { screen ->
                 when (screen) {
                     DrawerItem.Home -> HomeContent(navFocusRequester = mainFocusRequester)
+                    DrawerItem.Dynamics -> DynamicsContent(navFocusRequester = dynamicsFocusRequester)
                     DrawerItem.UGC -> UgcContent(navFocusRequester = ugcFocusRequester)
-                    DrawerItem.PGC -> PgcContent(navFocusRequester = pgcFocusRequester)
                     DrawerItem.Search -> SearchInputScreen(defaultFocusRequester = searchFocusRequester)
                     else -> {}
                 }

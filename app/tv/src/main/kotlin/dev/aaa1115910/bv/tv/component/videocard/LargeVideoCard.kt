@@ -127,7 +127,7 @@ fun LargeVideoCard(
                     text = data.title,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.titleMedium
                 )
                 Box(
                     modifier = Modifier

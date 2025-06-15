@@ -27,17 +27,27 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import dev.aaa1115910.bv.tv.component.HomeTopNavItem
 import dev.aaa1115910.bv.tv.component.TopNav
-import dev.aaa1115910.bv.tv.screens.main.home.DynamicsScreen
 import dev.aaa1115910.bv.tv.screens.main.home.PopularScreen
 import dev.aaa1115910.bv.tv.screens.main.home.RecommendScreen
+import dev.aaa1115910.bv.tv.screens.main.pgc.AnimeContent
+import dev.aaa1115910.bv.tv.screens.main.pgc.DocumentaryContent
+import dev.aaa1115910.bv.tv.screens.main.pgc.GuoChuangContent
+import dev.aaa1115910.bv.tv.screens.main.pgc.MovieContent
+import dev.aaa1115910.bv.tv.screens.main.pgc.TvContent
+import dev.aaa1115910.bv.tv.screens.main.pgc.VarietyContent
 import dev.aaa1115910.bv.tv.util.TvAnimationUtils
 import dev.aaa1115910.bv.util.Prefs
 import dev.aaa1115910.bv.util.fInfo
 import dev.aaa1115910.bv.util.requestFocus
 import dev.aaa1115910.bv.viewmodel.UserViewModel
-import dev.aaa1115910.bv.viewmodel.home.DynamicViewModel
 import dev.aaa1115910.bv.viewmodel.home.PopularViewModel
 import dev.aaa1115910.bv.viewmodel.home.RecommendViewModel
+import dev.aaa1115910.bv.viewmodel.pgc.PgcAnimeViewModel
+import dev.aaa1115910.bv.viewmodel.pgc.PgcDocumentaryViewModel
+import dev.aaa1115910.bv.viewmodel.pgc.PgcGuoChuangViewModel
+import dev.aaa1115910.bv.viewmodel.pgc.PgcMovieViewModel
+import dev.aaa1115910.bv.viewmodel.pgc.PgcTvViewModel
+import dev.aaa1115910.bv.viewmodel.pgc.PgcVarietyViewModel
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -49,8 +59,13 @@ fun HomeContent(
     navFocusRequester: FocusRequester,
     recommendViewModel: RecommendViewModel = koinViewModel(),
     popularViewModel: PopularViewModel = koinViewModel(),
-    dynamicViewModel: DynamicViewModel = koinViewModel(),
-    userViewModel: UserViewModel = koinViewModel()
+    userViewModel: UserViewModel = koinViewModel(),
+    pgcAnimeViewModel: PgcAnimeViewModel = koinViewModel(),
+    pgcGuoChuangViewModel: PgcGuoChuangViewModel = koinViewModel(),
+    pgcMovieViewModel: PgcMovieViewModel = koinViewModel(),
+    pgcDocumentaryViewModel: PgcDocumentaryViewModel = koinViewModel(),
+    pgcTvViewModel: PgcTvViewModel = koinViewModel(),
+    pgcVarietyViewModel: PgcVarietyViewModel = koinViewModel()
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -58,7 +73,12 @@ fun HomeContent(
 
     val recommendState = rememberLazyListState()
     val popularState = rememberLazyListState()
-    val dynamicState = rememberLazyListState()
+    val animeState = rememberLazyListState()
+    val guoChuangState = rememberLazyListState()
+    val movieState = rememberLazyListState()
+    val documentaryState = rememberLazyListState()
+    val tvState = rememberLazyListState()
+    val varietyState = rememberLazyListState()
 
     var selectedTab by remember { mutableStateOf(HomeTopNavItem.Recommend) }
     var focusOnContent by remember { mutableStateOf(false) }
@@ -69,7 +89,12 @@ fun HomeContent(
                 when (selectedTab) {
                     HomeTopNavItem.Recommend -> recommendState
                     HomeTopNavItem.Popular -> popularState
-                    HomeTopNavItem.Dynamics -> dynamicState
+                    HomeTopNavItem.Anime -> animeState
+                    HomeTopNavItem.GuoChuang -> guoChuangState
+                    HomeTopNavItem.Movie -> movieState
+                    HomeTopNavItem.Documentary -> documentaryState
+                    HomeTopNavItem.Tv -> tvState
+                    HomeTopNavItem.Variety -> varietyState
                 }
             ) {
                 firstVisibleItemIndex == 0 && firstVisibleItemScrollOffset == 0
@@ -84,9 +109,6 @@ fun HomeContent(
         }
         scope.launch(Dispatchers.IO) {
             popularViewModel.loadMore()
-        }
-        scope.launch(Dispatchers.IO) {
-            dynamicViewModel.loadMoreVideo()
         }
         scope.launch(Dispatchers.IO) {
             userViewModel.updateUserInfo()
@@ -118,7 +140,12 @@ fun HomeContent(
             when (selectedTab) {
                 HomeTopNavItem.Recommend -> if (Prefs.enableTvAnimations) recommendState.animateScrollToItem(0) else recommendState.scrollToItem(0)
                 HomeTopNavItem.Popular -> if (Prefs.enableTvAnimations) popularState.animateScrollToItem(0) else popularState.scrollToItem(0)
-                HomeTopNavItem.Dynamics -> if (Prefs.enableTvAnimations) dynamicState.animateScrollToItem(0) else dynamicState.scrollToItem(0)
+                HomeTopNavItem.Anime -> if (Prefs.enableTvAnimations) animeState.animateScrollToItem(0) else animeState.scrollToItem(0)
+                HomeTopNavItem.GuoChuang -> if (Prefs.enableTvAnimations) guoChuangState.animateScrollToItem(0) else guoChuangState.scrollToItem(0)
+                HomeTopNavItem.Movie -> if (Prefs.enableTvAnimations) movieState.animateScrollToItem(0) else movieState.scrollToItem(0)
+                HomeTopNavItem.Documentary -> if (Prefs.enableTvAnimations) documentaryState.animateScrollToItem(0) else documentaryState.scrollToItem(0)
+                HomeTopNavItem.Tv -> if (Prefs.enableTvAnimations) tvState.animateScrollToItem(0) else tvState.scrollToItem(0)
+                HomeTopNavItem.Variety -> if (Prefs.enableTvAnimations) varietyState.animateScrollToItem(0) else varietyState.scrollToItem(0)
             }
         }
     }
@@ -138,10 +165,23 @@ fun HomeContent(
                     when (nav) {
                         HomeTopNavItem.Recommend -> {}
                         HomeTopNavItem.Popular -> {}
-                        HomeTopNavItem.Dynamics -> {
-                            if (!dynamicViewModel.loadingVideo && dynamicViewModel.isLogin && dynamicViewModel.dynamicVideoList.isEmpty()) {
-                                scope.launch(Dispatchers.IO) { dynamicViewModel.loadMoreVideo() }
-                            }
+                        HomeTopNavItem.Anime -> {
+                            // PGC ViewModels automatically load data in init, no need to manually trigger
+                        }
+                        HomeTopNavItem.GuoChuang -> {
+                            // PGC ViewModels automatically load data in init, no need to manually trigger
+                        }
+                        HomeTopNavItem.Movie -> {
+                            // PGC ViewModels automatically load data in init, no need to manually trigger
+                        }
+                        HomeTopNavItem.Documentary -> {
+                            // PGC ViewModels automatically load data in init, no need to manually trigger
+                        }
+                        HomeTopNavItem.Tv -> {
+                            // PGC ViewModels automatically load data in init, no need to manually trigger
+                        }
+                        HomeTopNavItem.Variety -> {
+                            // PGC ViewModels automatically load data in init, no need to manually trigger
                         }
                     }
                 },
@@ -161,11 +201,46 @@ fun HomeContent(
                             scope.launch(Dispatchers.IO) { popularViewModel.loadMore() }
                         }
 
-                        HomeTopNavItem.Dynamics -> {
-                            logger.fInfo { "clear dynamic data" }
-                            dynamicViewModel.clearVideoData()
-                            logger.fInfo { "reload dynamic data" }
-                            scope.launch(Dispatchers.IO) { dynamicViewModel.loadMoreVideo() }
+                        HomeTopNavItem.Anime -> {
+                            logger.fInfo { "reload anime data" }
+                            scope.launch(Dispatchers.IO) {
+                                pgcAnimeViewModel.reloadAll()
+                            }
+                        }
+
+                        HomeTopNavItem.GuoChuang -> {
+                            logger.fInfo { "reload guochuang data" }
+                            scope.launch(Dispatchers.IO) {
+                                pgcGuoChuangViewModel.reloadAll()
+                            }
+                        }
+
+                        HomeTopNavItem.Movie -> {
+                            logger.fInfo { "reload movie data" }
+                            scope.launch(Dispatchers.IO) {
+                                pgcMovieViewModel.reloadAll()
+                            }
+                        }
+
+                        HomeTopNavItem.Documentary -> {
+                            logger.fInfo { "reload documentary data" }
+                            scope.launch(Dispatchers.IO) {
+                                pgcDocumentaryViewModel.reloadAll()
+                            }
+                        }
+
+                        HomeTopNavItem.Tv -> {
+                            logger.fInfo { "reload tv data" }
+                            scope.launch(Dispatchers.IO) {
+                                pgcTvViewModel.reloadAll()
+                            }
+                        }
+
+                        HomeTopNavItem.Variety -> {
+                            logger.fInfo { "reload variety data" }
+                            scope.launch(Dispatchers.IO) {
+                                pgcVarietyViewModel.reloadAll()
+                            }
                         }
                     }
                 }
@@ -188,7 +263,12 @@ fun HomeContent(
                 when (screen) {
                     HomeTopNavItem.Recommend -> RecommendScreen(lazyListState = recommendState)
                     HomeTopNavItem.Popular -> PopularScreen(lazyListState = popularState)
-                    HomeTopNavItem.Dynamics -> DynamicsScreen(lazyListState = dynamicState)
+                    HomeTopNavItem.Anime -> AnimeContent(lazyListState = animeState, pgcViewModel = pgcAnimeViewModel)
+                    HomeTopNavItem.GuoChuang -> GuoChuangContent(lazyListState = guoChuangState, pgcViewModel = pgcGuoChuangViewModel)
+                    HomeTopNavItem.Movie -> MovieContent(lazyListState = movieState, pgcViewModel = pgcMovieViewModel)
+                    HomeTopNavItem.Documentary -> DocumentaryContent(lazyListState = documentaryState, pgcViewModel = pgcDocumentaryViewModel)
+                    HomeTopNavItem.Tv -> TvContent(lazyListState = tvState, pgcViewModel = pgcTvViewModel)
+                    HomeTopNavItem.Variety -> VarietyContent(lazyListState = varietyState, pgcViewModel = pgcVarietyViewModel)
                 }
             }
         }
