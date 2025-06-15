@@ -36,7 +36,10 @@ fun Modifier.focusedBorder(
         initialValue = MaterialTheme.colorScheme.border.copy(alpha = 1f),
         targetValue = MaterialTheme.colorScheme.border.copy(alpha = 0.1f),
         animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = LinearEasing),
+            animation = tween(
+                durationMillis = if (Prefs.enableTvAnimations) (1000 * Prefs.tvAnimationDurationScale).toInt() else 0,
+                easing = LinearEasing
+            ),
             repeatMode = RepeatMode.Reverse
         ),
         label = "focused border animate color"

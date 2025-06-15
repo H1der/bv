@@ -30,6 +30,8 @@ import dev.aaa1115910.bv.tv.component.TopNav
 import dev.aaa1115910.bv.tv.screens.main.home.DynamicsScreen
 import dev.aaa1115910.bv.tv.screens.main.home.PopularScreen
 import dev.aaa1115910.bv.tv.screens.main.home.RecommendScreen
+import dev.aaa1115910.bv.tv.util.TvAnimationUtils
+import dev.aaa1115910.bv.util.Prefs
 import dev.aaa1115910.bv.util.fInfo
 import dev.aaa1115910.bv.util.requestFocus
 import dev.aaa1115910.bv.viewmodel.UserViewModel
@@ -114,9 +116,9 @@ fun HomeContent(
         // scroll to top
         scope.launch(Dispatchers.Main) {
             when (selectedTab) {
-                HomeTopNavItem.Recommend -> recommendState.animateScrollToItem(0)
-                HomeTopNavItem.Popular -> popularState.animateScrollToItem(0)
-                HomeTopNavItem.Dynamics -> dynamicState.animateScrollToItem(0)
+                HomeTopNavItem.Recommend -> if (Prefs.enableTvAnimations) recommendState.animateScrollToItem(0) else recommendState.scrollToItem(0)
+                HomeTopNavItem.Popular -> if (Prefs.enableTvAnimations) popularState.animateScrollToItem(0) else popularState.scrollToItem(0)
+                HomeTopNavItem.Dynamics -> if (Prefs.enableTvAnimations) dynamicState.animateScrollToItem(0) else dynamicState.scrollToItem(0)
             }
         }
     }
@@ -178,16 +180,10 @@ fun HomeContent(
             AnimatedContent(
                 targetState = selectedTab,
                 label = "home animated content",
-                transitionSpec = {
-                    val coefficient = 10
-                    if (targetState.ordinal < initialState.ordinal) {
-                        fadeIn() + slideInHorizontally { -it / coefficient } togetherWith
-                                fadeOut() + slideOutHorizontally { it / coefficient }
-                    } else {
-                        fadeIn() + slideInHorizontally { it / coefficient } togetherWith
-                                fadeOut() + slideOutHorizontally { -it / coefficient }
-                    }
-                }
+                transitionSpec = TvAnimationUtils.optimizedHorizontalSlideTransition(
+                    coefficient = 10,
+                    duration = 200
+                )
             ) { screen ->
                 when (screen) {
                     HomeTopNavItem.Recommend -> RecommendScreen(lazyListState = recommendState)

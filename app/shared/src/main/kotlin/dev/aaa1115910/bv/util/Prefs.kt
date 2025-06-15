@@ -308,6 +308,15 @@ object Prefs {
             ThemeType.entries[dsm.getPreferenceFlow(PrefKeys.prefThemeTypeRequest).first()]
         }
         set(value) = runBlocking { dsm.editPreference(PrefKeys.prefThemeTypeKey, value.ordinal) }
+
+    // TV动画优化配置
+    var enableTvAnimations: Boolean
+        get() = runBlocking { dsm.getPreferenceFlow(PrefKeys.prefEnableTvAnimationsRequest).first() }
+        set(value) = runBlocking { dsm.editPreference(PrefKeys.prefEnableTvAnimationsKey, value) }
+
+    var tvAnimationDurationScale: Float
+        get() = runBlocking { dsm.getPreferenceFlow(PrefKeys.prefTvAnimationDurationScaleRequest).first() }
+        set(value) = runBlocking { dsm.editPreference(PrefKeys.prefTvAnimationDurationScaleKey, value) }
     val themeTypeFlow: Flow<ThemeType>
         get() = dsm.getPreferenceFlow(PrefKeys.prefThemeTypeRequest)
             .transform { ordinal -> emit(ThemeType.entries[ordinal]) }
@@ -356,6 +365,8 @@ object PrefKeys {
     val prefEnableFfmpegAudioRenderer = booleanPreferencesKey("enable_ffmpeg_audio_renderer")
     val prefBlacklistUserKey = booleanPreferencesKey("blacklist_user")
     val prefThemeTypeKey = intPreferencesKey("theme_type")
+    val prefEnableTvAnimationsKey = booleanPreferencesKey("enable_tv_animations")
+    val prefTvAnimationDurationScaleKey = floatPreferencesKey("tv_animation_duration_scale")
 
     val prefIsLoginRequest = PreferenceRequest(prefIsLoginKey, false)
     val prefUidRequest = PreferenceRequest(prefUidKey, 0)
@@ -409,4 +420,6 @@ object PrefKeys {
     val prefEnableFfmpegEndererRequest = PreferenceRequest(prefEnableFfmpegAudioRenderer, false)
     val prefBlacklistUserRequest = PreferenceRequest(prefBlacklistUserKey, false)
     val prefThemeTypeRequest = PreferenceRequest(prefThemeTypeKey, ThemeType.Auto.ordinal)
+    val prefEnableTvAnimationsRequest = PreferenceRequest(prefEnableTvAnimationsKey, true)
+    val prefTvAnimationDurationScaleRequest = PreferenceRequest(prefTvAnimationDurationScaleKey, 0.3f)
 }

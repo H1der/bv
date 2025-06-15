@@ -7,6 +7,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import dev.aaa1115910.bv.tv.util.TvAnimationUtils
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -118,10 +119,8 @@ fun Carousel(
     itemCount: Int,
     modifier: Modifier = Modifier,
     autoScrollInterval: Long = CarouselDefaults.TimeToDisplayItemMillis,
-    contentTransformStartToEnd: ContentTransform = fadeIn(tween(1000))
-        .togetherWith(fadeOut(tween(1000))),
-    contentTransformEndToStart: ContentTransform = fadeIn(tween(1000))
-        .togetherWith(fadeOut(tween(1000))),
+    contentTransformStartToEnd: ContentTransform = TvAnimationUtils.optimizedFadeTransition(600),
+    contentTransformEndToStart: ContentTransform = TvAnimationUtils.optimizedFadeTransition(600),
     onClick: (index: Int) -> Unit,
     content: @Composable AnimatedContentScope.(index: Int) -> Unit
 ) {

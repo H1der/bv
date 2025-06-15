@@ -56,6 +56,7 @@ import dev.aaa1115910.bv.tv.screens.main.ugc.TravelContent
 import dev.aaa1115910.bv.tv.screens.main.ugc.UgcScaffoldState
 import dev.aaa1115910.bv.tv.screens.main.ugc.VlogContent
 import dev.aaa1115910.bv.tv.screens.main.ugc.rememberUgcScaffoldState
+import dev.aaa1115910.bv.util.Prefs
 import dev.aaa1115910.bv.util.fInfo
 import dev.aaa1115910.bv.util.requestFocus
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -115,14 +116,14 @@ fun UgcContent(
         // scroll to top
         scope.launch(Dispatchers.Main) {
             when (selectedTab) {
-                UgcTopNavItem.Douga -> dougaState.lazyListState.animateScrollToItem(0)
-                UgcTopNavItem.Game -> gameState.lazyListState.animateScrollToItem(0)
-                UgcTopNavItem.Kichiku -> kichikuState.lazyListState.animateScrollToItem(0)
-                UgcTopNavItem.Music -> musicState.lazyListState.animateScrollToItem(0)
-                UgcTopNavItem.Dance -> danceState.lazyListState.animateScrollToItem(0)
-                UgcTopNavItem.Cinephile -> cinephileState.lazyListState.animateScrollToItem(0)
-                UgcTopNavItem.Ent -> entState.lazyListState.animateScrollToItem(0)
-                UgcTopNavItem.Knowledge -> knowledgeState.lazyListState.animateScrollToItem(0)
+                UgcTopNavItem.Douga -> if (Prefs.enableTvAnimations) dougaState.lazyListState.animateScrollToItem(0) else dougaState.lazyListState.scrollToItem(0)
+                UgcTopNavItem.Game -> if (Prefs.enableTvAnimations) gameState.lazyListState.animateScrollToItem(0) else gameState.lazyListState.scrollToItem(0)
+                UgcTopNavItem.Kichiku -> if (Prefs.enableTvAnimations) kichikuState.lazyListState.animateScrollToItem(0) else kichikuState.lazyListState.scrollToItem(0)
+                UgcTopNavItem.Music -> if (Prefs.enableTvAnimations) musicState.lazyListState.animateScrollToItem(0) else musicState.lazyListState.scrollToItem(0)
+                UgcTopNavItem.Dance -> if (Prefs.enableTvAnimations) danceState.lazyListState.animateScrollToItem(0) else danceState.lazyListState.scrollToItem(0)
+                UgcTopNavItem.Cinephile -> if (Prefs.enableTvAnimations) cinephileState.lazyListState.animateScrollToItem(0) else cinephileState.lazyListState.scrollToItem(0)
+                UgcTopNavItem.Ent -> if (Prefs.enableTvAnimations) entState.lazyListState.animateScrollToItem(0) else entState.lazyListState.scrollToItem(0)
+                UgcTopNavItem.Knowledge -> if (Prefs.enableTvAnimations) knowledgeState.lazyListState.animateScrollToItem(0) else knowledgeState.lazyListState.scrollToItem(0)
                 UgcTopNavItem.Tech -> techState.lazyListState.animateScrollToItem(0)
                 UgcTopNavItem.Information -> informationState.lazyListState.animateScrollToItem(0)
                 UgcTopNavItem.Food -> foodState.lazyListState.animateScrollToItem(0)

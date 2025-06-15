@@ -2,6 +2,7 @@ package dev.aaa1115910.bv.tv.screens.settings
 
 import android.content.Context
 import androidx.compose.animation.core.animateFloatAsState
+import dev.aaa1115910.bv.tv.util.rememberOptimizedAnimationSpec
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -60,6 +61,7 @@ fun SettingsScreen(
     val showLargeTitle by remember { derivedStateOf { true } }
     val titleFontSize by animateFloatAsState(
         targetValue = if (showLargeTitle) 48f else 24f,
+        animationSpec = rememberOptimizedAnimationSpec(200),
         label = "title font size"
     )
 

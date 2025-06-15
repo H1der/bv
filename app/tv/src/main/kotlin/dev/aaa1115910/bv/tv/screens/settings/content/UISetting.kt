@@ -4,6 +4,7 @@ import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -42,6 +43,7 @@ import androidx.tv.material3.Icon
 import androidx.tv.material3.ListItem
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.RadioButton
+import androidx.tv.material3.Switch
 import androidx.tv.material3.Text
 import dev.aaa1115910.bv.R
 import dev.aaa1115910.bv.entity.ThemeType
@@ -61,8 +63,11 @@ fun UISetting(
 
     var showDensityDialog by remember { mutableStateOf(false) }
     var showThemeTypeDialog by remember { mutableStateOf(false) }
+    var showTvAnimationDialog by remember { mutableStateOf(false) }
     val density by Prefs.densityFlow.collectAsState(context.resources.displayMetrics.widthPixels / 960f)
     val themeType by Prefs.themeTypeFlow.collectAsState(Prefs.themeType)
+    var enableTvAnimations by remember { mutableStateOf(Prefs.enableTvAnimations) }
+    var tvAnimationDurationScale by remember { mutableFloatStateOf(Prefs.tvAnimationDurationScale) }
 
     Box(modifier = modifier) {
         Column(
@@ -94,6 +99,13 @@ fun UISetting(
                         onClick = { showThemeTypeDialog = true }
                     )
                 }
+                item {
+                    SettingListItem(
+                        title = "TV动画优化",
+                        supportText = "优化TV设备上的动画性能",
+                        onClick = { showTvAnimationDialog = true }
+                    )
+                }
             }
         }
     }
@@ -110,6 +122,21 @@ fun UISetting(
         onHideDialog = { showThemeTypeDialog = false },
         themeType = themeType,
         onThemeTypeChange = { Prefs.themeType = it }
+    )
+
+    TvAnimationDialog(
+        show = showTvAnimationDialog,
+        onHideDialog = { showTvAnimationDialog = false },
+        enableTvAnimations = enableTvAnimations,
+        tvAnimationDurationScale = tvAnimationDurationScale,
+        onEnableTvAnimationsChange = {
+            enableTvAnimations = it
+            Prefs.enableTvAnimations = it
+        },
+        onTvAnimationDurationScaleChange = {
+            tvAnimationDurationScale = it
+            Prefs.tvAnimationDurationScale = it
+        }
     )
 }
 
@@ -203,6 +230,97 @@ fun ThemeTypeDialog(
                                 )
                             }
                         )
+                    }
+                }
+            },
+            confirmButton = {}
+        )
+    }
+}
+
+@Composable
+fun TvAnimationDialog(
+    modifier: Modifier = Modifier,
+    show: Boolean,
+    onHideDialog: () -> Unit,
+    enableTvAnimations: Boolean,
+    tvAnimationDurationScale: Float,
+    onEnableTvAnimationsChange: (Boolean) -> Unit,
+    onTvAnimationDurationScaleChange: (Float) -> Unit
+) {
+    val scope = rememberCoroutineScope()
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(show) {
+        if (show) focusRequester.requestFocus(scope)
+    }
+
+    if (show) {
+        TvAlertDialog(
+            modifier = modifier,
+            onDismissRequest = { onHideDialog() },
+            title = { Text(text = "TV动画优化设置") },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .focusRequester(focusRequester)
+                        .focusable()
+                        .fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // 启用动画开关
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(text = "启用TV动画")
+                            Text(
+                                text = "关闭可获得最佳性能",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Switch(
+                            checked = enableTvAnimations,
+                            onCheckedChange = onEnableTvAnimationsChange
+                        )
+                    }
+
+                    // 动画速度调节
+                    if (enableTvAnimations) {
+                        Column {
+                            Text(text = "动画速度: ${(tvAnimationDurationScale * 100).roundToInt()}%")
+                            Text(
+                                text = "使用上下键调节 (推荐30%以获得最佳性能)",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .onPreviewKeyEvent {
+                                        if (it.key == Key.DirectionUp || it.key == Key.DirectionDown) {
+                                            if (it.type == KeyEventType.KeyDown) {
+                                                var newScale = if (it.key == Key.DirectionUp)
+                                                    tvAnimationDurationScale + 0.1f else tvAnimationDurationScale - 0.1f
+                                                newScale = (newScale * 10).roundToInt() / 10f
+                                                if (newScale < 0.1f) newScale = 0.1f
+                                                if (newScale > 1.0f) newScale = 1.0f
+                                                onTvAnimationDurationScaleChange(newScale)
+                                            }
+                                        }
+                                        false
+                                    },
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(imageVector = Icons.Rounded.ArrowDropUp, contentDescription = null)
+                                Text(text = "${(tvAnimationDurationScale * 100).roundToInt()}%")
+                                Icon(imageVector = Icons.Rounded.ArrowDropDown, contentDescription = null)
+                            }
+                        }
                     }
                 }
             },
