@@ -6,10 +6,13 @@
             android:name="dev.aaa1115910.bv.mobile.activities.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.BV.Mobile.Splash">
+            <!-- Removed LAUNCHER intent-filter to make TV mode default -->
+            <!--
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            -->
         </activity>
         <activity
             android:name=".activities.VideoPlayerActivity"
