@@ -14,6 +14,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowDropDown
 import androidx.compose.material.icons.rounded.ArrowDropUp
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import kotlin.math.roundToInt
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -30,9 +34,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -54,6 +55,7 @@ import dev.aaa1115910.bv.ui.theme.BVTheme
 import dev.aaa1115910.bv.util.Prefs
 import dev.aaa1115910.bv.util.requestFocus
 import kotlin.math.roundToInt
+import kotlinx.coroutines.launch
 
 @Composable
 fun UISetting(
@@ -249,10 +251,14 @@ fun TvAnimationDialog(
     onTvAnimationDurationScaleChange: (Float) -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    val focusRequester = remember { FocusRequester() }
+    val enableAnimationsFocusRequester = remember { FocusRequester() }
 
     LaunchedEffect(show) {
-        if (show) focusRequester.requestFocus(scope)
+        if (show) {
+            scope.launch {
+                enableAnimationsFocusRequester.requestFocus()
+            }
+        }
     }
 
     if (show) {
@@ -262,65 +268,69 @@ fun TvAnimationDialog(
             title = { Text(text = "TV动画优化设置") },
             text = {
                 Column(
-                    modifier = Modifier
-                        .focusRequester(focusRequester)
-                        .focusable()
-                        .fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     // 启用动画开关
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
+                    ListItem(
+                        modifier = Modifier.focusRequester(enableAnimationsFocusRequester),
+                        selected = false,
+                        onClick = { onEnableTvAnimationsChange(!enableTvAnimations) },
+                        headlineContent = {
                             Text(text = "启用TV动画")
+                        },
+                        supportingContent = {
                             Text(
                                 text = "关闭可获得最佳性能",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        },
+                        trailingContent = {
+                            androidx.tv.material3.Switch(
+                                checked = enableTvAnimations,
+                                onCheckedChange = null
                             )
                         }
-                        Switch(
-                            checked = enableTvAnimations,
-                            onCheckedChange = onEnableTvAnimationsChange
-                        )
-                    }
+                    )
 
                     // 动画速度调节
                     if (enableTvAnimations) {
-                        Column {
-                            Text(text = "动画速度: ${(tvAnimationDurationScale * 100).roundToInt()}%")
-                            Text(
-                                text = "使用上下键调节 (推荐30%以获得最佳性能)",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .onPreviewKeyEvent {
-                                        if (it.key == Key.DirectionUp || it.key == Key.DirectionDown) {
-                                            if (it.type == KeyEventType.KeyDown) {
-                                                var newScale = if (it.key == Key.DirectionUp)
-                                                    tvAnimationDurationScale + 0.1f else tvAnimationDurationScale - 0.1f
-                                                newScale = (newScale * 10).roundToInt() / 10f
-                                                if (newScale < 0.1f) newScale = 0.1f
-                                                if (newScale > 1.0f) newScale = 1.0f
-                                                onTvAnimationDurationScaleChange(newScale)
-                                            }
-                                        }
-                                        false
-                                    },
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(imageVector = Icons.Rounded.ArrowDropUp, contentDescription = null)
-                                Text(text = "${(tvAnimationDurationScale * 100).roundToInt()}%")
-                                Icon(imageVector = Icons.Rounded.ArrowDropDown, contentDescription = null)
+                        ListItem(
+                            selected = false,
+                            onClick = { },
+                            modifier = Modifier.onPreviewKeyEvent {
+                                if (it.key == Key.DirectionUp || it.key == Key.DirectionDown) {
+                                    if (it.type == KeyEventType.KeyDown) {
+                                        var newScale = if (it.key == Key.DirectionUp)
+                                            tvAnimationDurationScale + 0.1f else tvAnimationDurationScale - 0.1f
+                                        newScale = (newScale * 10).roundToInt() / 10f
+                                        if (newScale < 0.1f) newScale = 0.1f
+                                        if (newScale > 1.0f) newScale = 1.0f
+                                        onTvAnimationDurationScaleChange(newScale)
+                                    }
+                                    true
+                                } else false
+                            },
+                            headlineContent = {
+                                Text(text = "动画速度: ${(tvAnimationDurationScale * 100).roundToInt()}%")
+                            },
+                            supportingContent = {
+                                Text(
+                                    text = "使用上下键调节 (推荐30%以获得最佳性能)",
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            },
+                            trailingContent = {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(imageVector = Icons.Rounded.ArrowDropUp, contentDescription = null)
+                                    Text(text = "${(tvAnimationDurationScale * 100).roundToInt()}%")
+                                    Icon(imageVector = Icons.Rounded.ArrowDropDown, contentDescription = null)
+                                }
                             }
-                        }
+                        )
                     }
                 }
             },

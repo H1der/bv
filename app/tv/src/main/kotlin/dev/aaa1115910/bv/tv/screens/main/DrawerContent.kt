@@ -185,7 +185,7 @@ enum class DrawerItem(
     Search(displayName = "搜索", displayIcon = Icons.Default.Search),
     Home(displayName = "首页", displayIcon = Icons.Default.Home),
     Dynamics(displayName = "动态", displayIcon = Icons.Default.DynamicFeed),
-    UGC(displayName = "UGC", displayIcon = Icons.Default.OndemandVideo),
+    UGC(displayName = "分区", displayIcon = Icons.Default.OndemandVideo),
     Settings(displayName = "设置", displayIcon = Icons.Default.Settings), ;
 }
 
