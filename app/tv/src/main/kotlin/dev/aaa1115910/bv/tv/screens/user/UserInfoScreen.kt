@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -20,8 +21,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -71,8 +72,6 @@ import dev.aaa1115910.biliapi.repositories.SeasonRepository
 import dev.aaa1115910.biliapi.repositories.UserRepository
 import dev.aaa1115910.bv.BuildConfig
 import dev.aaa1115910.bv.R
-import dev.aaa1115910.bv.tv.component.videocard.SeasonCard
-import dev.aaa1115910.bv.tv.component.videocard.VideosRow
 import dev.aaa1115910.bv.entity.carddata.SeasonCardData
 import dev.aaa1115910.bv.entity.carddata.VideoCardData
 import dev.aaa1115910.bv.entity.proxy.ProxyArea
@@ -83,12 +82,14 @@ import dev.aaa1115910.bv.tv.activities.user.HistoryActivity
 import dev.aaa1115910.bv.tv.activities.user.UserSwitchActivity
 import dev.aaa1115910.bv.tv.activities.video.SeasonInfoActivity
 import dev.aaa1115910.bv.tv.activities.video.VideoInfoActivity
+import dev.aaa1115910.bv.tv.component.videocard.SeasonCard
+import dev.aaa1115910.bv.tv.component.videocard.VideosRow
 import dev.aaa1115910.bv.ui.theme.BVTheme
 import dev.aaa1115910.bv.util.Prefs
 import dev.aaa1115910.bv.util.fException
 import dev.aaa1115910.bv.util.fInfo
 import dev.aaa1115910.bv.util.fWarn
-import dev.aaa1115910.bv.util.formatMinSec
+import dev.aaa1115910.bv.util.formatHourMinSec
 import dev.aaa1115910.bv.util.toast
 import dev.aaa1115910.bv.viewmodel.UserViewModel
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -145,8 +146,8 @@ fun UserInfoScreen(
                             timeString = if (historyItem.progress == -1) context.getString(R.string.play_time_finish)
                             else context.getString(
                                 R.string.play_time_history,
-                                (historyItem.progress * 1000L).formatMinSec(),
-                                (historyItem.duration * 1000L).formatMinSec()
+                                (historyItem.progress * 1000L).formatHourMinSec(),
+                                (historyItem.duration * 1000L).formatHourMinSec()
                             )
                         )
                     )
@@ -432,13 +433,14 @@ private fun UserInfo(
             }
             Column(
                 modifier = Modifier
-                    .fillMaxHeight()
                     .padding(
                         start = 6.dp,
                         top = 24.dp,
                         end = 24.dp,
                         bottom = 24.dp
-                    ),
+                    )
+                    .height(80.dp),
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
                 val startPaddingValue = 6.dp
                 CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
@@ -489,11 +491,11 @@ private fun UserInfo(
                     )
                 }
 
-                Slider(
-                    enabled = false,
-                    value = levelSlider,
-                    onValueChange = {},
-                    colors = sliderColor
+                LinearProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    progress = { levelSlider },
                 )
             }
         }

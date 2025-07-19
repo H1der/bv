@@ -21,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,6 +32,8 @@ import androidx.compose.ui.unit.dp
 import androidx.tv.material3.DrawerValue
 import androidx.tv.material3.NavigationDrawer
 import androidx.tv.material3.rememberDrawerState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import dev.aaa1115910.bv.R
 import dev.aaa1115910.bv.tv.component.UserPanel
 import dev.aaa1115910.bv.tv.activities.settings.SettingsActivity
@@ -65,6 +68,7 @@ fun MainScreen(
     userViewModel: UserViewModel = koinViewModel()
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val logger = KotlinLogging.logger("MainScreen")
     var showUserPanel by remember { mutableStateOf(false) }
     var lastPressBack: Long by remember { mutableLongStateOf(0L) }
@@ -132,6 +136,11 @@ fun MainScreen(
                 onFocusToContent = onFocusToContent,
                 onLogin = {
                     context.startActivity(Intent(context, LoginActivity::class.java))
+                },
+                onRefreshDynamics = {
+                    scope.launch(Dispatchers.IO) {
+                        dynamicViewModel.refreshData()
+                    }
                 }
             )
         },

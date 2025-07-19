@@ -72,13 +72,16 @@ class DynamicViewModel(
                 updateBaseline = videoUpdateBaseline ?: "",
                 preferApiType = Prefs.apiType
             )
-            dynamicVideoList.addAllWithMainContext(dynamicVideoData.videos)
+            // 去重添加视频数据
+            val existingAids = dynamicVideoList.map { it.aid }.toSet()
+            val newVideos = dynamicVideoData.videos.filter { it.aid !in existingAids }
+            dynamicVideoList.addAllWithMainContext(newVideos)
             videoHistoryOffset = dynamicVideoData.historyOffset
             videoUpdateBaseline = dynamicVideoData.updateBaseline
             videoHasMore = dynamicVideoData.hasMore
 
-            logger.fInfo { "Load dynamic video list page: ${currentVideoPage},size: ${dynamicVideoData.videos.size}" }
-            val avList = dynamicVideoData.videos.map {
+            logger.fInfo { "Load dynamic video list page: ${currentVideoPage}, total: ${dynamicVideoData.videos.size}, new: ${newVideos.size}" }
+            val avList = newVideos.map {
                 it.aid
             }
             logger.fInfo { "Load dynamic video size: ${avList.size}" }
@@ -108,20 +111,23 @@ class DynamicViewModel(
     private suspend fun loadAllData() {
         if (!allHasMore || !bvUserRepository.isLogin) return
         loadingAll = true
-        logger.fInfo { "Load more dynamic all [apiType=${Prefs.apiType}, offset=$allHistoryOffset, page=${currentVideoPage + 1}]" }
+        logger.fInfo { "Load more dynamic all [apiType=${Prefs.apiType}, offset=$allHistoryOffset, page=${currentAllPage + 1}]" }
         runCatching {
             val dynamicData = userRepository.getDynamics(
-                page = ++currentVideoPage,
+                page = ++currentAllPage,
                 offset = allHistoryOffset ?: "",
                 updateBaseline = allUpdateBaseline ?: "",
                 preferApiType = Prefs.apiType
             )
-            dynamicAllList.addAll(dynamicData.dynamics)
+            // 去重添加动态数据
+            val existingIds = dynamicAllList.mapNotNull { it.id }.toSet()
+            val newDynamics = dynamicData.dynamics.filter { it.id != null && it.id !in existingIds }
+            dynamicAllList.addAll(newDynamics)
             allHistoryOffset = dynamicData.historyOffset
             allUpdateBaseline = dynamicData.updateBaseline
             allHasMore = dynamicData.hasMore
 
-            logger.fInfo { "Load dynamic all list page: ${currentVideoPage},size: ${dynamicData.dynamics.size}" }
+            logger.fInfo { "Load dynamic all list page: ${currentAllPage}, total: ${dynamicData.dynamics.size}, new: ${newDynamics.size}" }
         }.onFailure {
             logger.fWarn { "Load dynamic all list failed: ${it.stackTraceToString()}" }
             when (it) {
@@ -149,6 +155,7 @@ class DynamicViewModel(
         loadingVideo = false
         videoHasMore = true
         videoHistoryOffset = null
+        videoUpdateBaseline = null
     }
 
     fun clearAllData() {
@@ -157,5 +164,13 @@ class DynamicViewModel(
         loadingAll = false
         allHasMore = true
         allHistoryOffset = null
+        allUpdateBaseline = null
+    }
+
+    suspend fun refreshData() {
+        logger.fInfo { "Refreshing dynamic data" }
+        clearVideoData()
+        clearAllData()
+        loadMoreVideo()
     }
 }

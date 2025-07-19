@@ -46,8 +46,10 @@ import androidx.tv.material3.rememberDrawerState
 import coil.compose.AsyncImage
 import dev.aaa1115910.bv.ui.theme.BVTheme
 import dev.aaa1115910.bv.util.ifElse
+import dev.aaa1115910.bv.util.isDpadCenter
 import dev.aaa1115910.bv.util.isDpadRight
 import dev.aaa1115910.bv.util.isKeyDown
+import kotlinx.coroutines.delay
 
 @Composable
 fun NavigationDrawerScope.DrawerContent(
@@ -59,13 +61,20 @@ fun NavigationDrawerScope.DrawerContent(
     onOpenSettings: () -> Unit = {},
     onShowUserPanel: () -> Unit = {},
     onFocusToContent: () -> Unit = {},
-    onLogin: () -> Unit = {}
+    onLogin: () -> Unit = {},
+    onRefreshDynamics: () -> Unit = {}
 ) {
     var selectedItem by remember { mutableStateOf(DrawerItem.Home) }
     val centerFocusRequester = remember { FocusRequester() }
+    var tabMoved by remember { mutableStateOf(true) }
 
     LaunchedEffect(selectedItem) {
+        tabMoved = false
+        delay(200)
         onDrawerItemChanged(selectedItem)
+        // 别急着向右移动焦点，动画还没结束
+        delay(200)
+        tabMoved = true
     }
 
     Column(
@@ -75,7 +84,7 @@ fun NavigationDrawerScope.DrawerContent(
             .onPreviewKeyEvent { keyEvent ->
                 if (keyEvent.isDpadRight()) {
                     if (keyEvent.isKeyDown()) {
-                        onFocusToContent()
+                        if (tabMoved) onFocusToContent()
                         return@onPreviewKeyEvent true
                     }
                 }
@@ -146,7 +155,14 @@ fun NavigationDrawerScope.DrawerContent(
                             .ifElse(
                                 item == DrawerItem.Home,
                                 Modifier.focusRequester(centerFocusRequester)
-                            ),
+                            )
+                            .onPreviewKeyEvent { keyEvent ->
+                                if (item == DrawerItem.Dynamics && keyEvent.isDpadCenter() && keyEvent.isKeyDown()) {
+                                    onRefreshDynamics()
+                                    return@onPreviewKeyEvent true
+                                }
+                                false
+                            },
                         onClick = { selectedItem = item },
                         selected = selectedItem == item,
                         leadingContent = {
